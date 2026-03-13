@@ -3,14 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Stethoscope, Users, Building2, Eye, EyeOff, Mail, Lock, User, Activity } from "lucide-react";
+import { Stethoscope, Users, Building2, Eye, EyeOff, Mail, Lock, User, Activity, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Role = "doctor" | "patient" | "staff";
 type AuthMode = "login" | "register";
-
-interface AuthPageProps {
-  onLogin: (role: Role) => void;
-}
 
 const roles: { id: Role; icon: React.ElementType; title: string; desc: string }[] = [
   { id: "doctor", icon: Stethoscope, title: "Doctor", desc: "Access patient records & analytics" },
@@ -18,21 +15,30 @@ const roles: { id: Role; icon: React.ElementType; title: string; desc: string }[
   { id: "staff", icon: Building2, title: "Staff", desc: "Hospital management tools" },
 ];
 
-const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
+const AuthPage: React.FC = () => {
+  const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState<AuthMode>("login");
   const [selectedRole, setSelectedRole] = useState<Role>("doctor");
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin(selectedRole);
-  };
-
-  const handleDemo = () => {
-    onLogin(selectedRole);
+    setIsLoading(true);
+    try {
+      if (mode === "login") {
+        await signIn(email, password);
+      } else {
+        await signUp(email, password, name, selectedRole);
+      }
+    } catch {
+      // Error handled in context
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -87,25 +93,37 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
             {mode === "login" ? "Sign in to your account" : "Get started with NexusHealth AI"}
           </p>
 
-          {/* Role selection */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            {roles.map((role) => (
-              <motion.button
-                key={role.id}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setSelectedRole(role.id)}
-                className={`p-3 rounded-xl border-2 transition-all duration-200 text-center ${
-                  selectedRole === role.id
-                    ? "border-primary bg-accent shadow-md"
-                    : "border-border bg-card hover:border-primary/30"
-                }`}
+          {/* Role selection - only show on register */}
+          <AnimatePresence mode="wait">
+            {mode === "register" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-6"
               >
-                <role.icon className={`w-5 h-5 mx-auto mb-1.5 ${selectedRole === role.id ? "text-primary" : "text-muted-foreground"}`} />
-                <span className={`text-xs font-medium ${selectedRole === role.id ? "text-accent-foreground" : "text-muted-foreground"}`}>{role.title}</span>
-              </motion.button>
-            ))}
-          </div>
+                <Label className="text-sm font-medium mb-3 block">Select your role</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  {roles.map((role) => (
+                    <motion.button
+                      key={role.id}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setSelectedRole(role.id)}
+                      className={`p-3 rounded-xl border-2 transition-all duration-200 text-center ${
+                        selectedRole === role.id
+                          ? "border-primary bg-accent shadow-md"
+                          : "border-border bg-card hover:border-primary/30"
+                      }`}
+                    >
+                      <role.icon className={`w-5 h-5 mx-auto mb-1.5 ${selectedRole === role.id ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className={`text-xs font-medium ${selectedRole === role.id ? "text-accent-foreground" : "text-muted-foreground"}`}>{role.title}</span>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <AnimatePresence mode="wait">
@@ -114,7 +132,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
                   <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
                   <div className="relative mt-1.5">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Dr. Jane Smith" className="pl-10 h-11 rounded-lg" />
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Dr. Jane Smith" className="pl-10 h-11 rounded-lg" required />
                   </div>
                 </motion.div>
               )}
@@ -124,7 +142,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
               <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <div className="relative mt-1.5">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="doctor@nexushealth.ai" className="pl-10 h-11 rounded-lg" />
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="doctor@nexushealth.ai" className="pl-10 h-11 rounded-lg" required />
               </div>
             </div>
 
@@ -132,23 +150,21 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
               <Label htmlFor="password" className="text-sm font-medium">Password</Label>
               <div className="relative mt-1.5">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="pl-10 pr-10 h-11 rounded-lg" />
+                <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="pl-10 pr-10 h-11 rounded-lg" required minLength={6} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            <Button type="submit" variant="gradient" size="lg" className="w-full">
-              {mode === "login" ? "Sign In" : "Create Account"}
+            <Button type="submit" variant="gradient" size="lg" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Please wait...</>
+              ) : (
+                mode === "login" ? "Sign In" : "Create Account"
+              )}
             </Button>
           </form>
-
-          <div className="mt-4">
-            <Button variant="glass" size="lg" className="w-full" onClick={handleDemo}>
-              Demo Login as {roles.find(r => r.id === selectedRole)?.title}
-            </Button>
-          </div>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             {mode === "login" ? "Don't have an account? " : "Already have an account? "}
