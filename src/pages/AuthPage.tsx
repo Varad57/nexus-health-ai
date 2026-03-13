@@ -16,7 +16,7 @@ const roles: { id: Role; icon: React.ElementType; title: string; desc: string }[
 ];
 
 const AuthPage: React.FC = () => {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithGoogle } = useAuth();
   const [mode, setMode] = useState<AuthMode>("login");
   const [selectedRole, setSelectedRole] = useState<Role>("doctor");
   const [showPassword, setShowPassword] = useState(false);
@@ -110,11 +110,10 @@ const AuthPage: React.FC = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setSelectedRole(role.id)}
-                      className={`p-3 rounded-xl border-2 transition-all duration-200 text-center ${
-                        selectedRole === role.id
+                      className={`p-3 rounded-xl border-2 transition-all duration-200 text-center ${selectedRole === role.id
                           ? "border-primary bg-accent shadow-md"
                           : "border-border bg-card hover:border-primary/30"
-                      }`}
+                        }`}
                     >
                       <role.icon className={`w-5 h-5 mx-auto mb-1.5 ${selectedRole === role.id ? "text-primary" : "text-muted-foreground"}`} />
                       <span className={`text-xs font-medium ${selectedRole === role.id ? "text-accent-foreground" : "text-muted-foreground"}`}>{role.title}</span>
@@ -165,6 +164,41 @@ const AuthPage: React.FC = () => {
               )}
             </Button>
           </form>
+
+          <div className="mt-6 flex items-center justify-center space-x-2">
+            <span className="h-px bg-border flex-1"></span>
+            <span className="text-xs text-muted-foreground uppercase">Or</span>
+            <span className="h-px bg-border flex-1"></span>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full mt-6 flex items-center justify-center"
+            onClick={() => signInWithGoogle()}
+            disabled={isLoading}
+          >
+            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+              <path
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                fill="#4285F4"
+              />
+              <path
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.1v2.84C3.92 20.5 7.64 23 12 23z"
+                fill="#34A853"
+              />
+              <path
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.1C1.39 8.49 1 10.18 1 12s.39 3.51 1.1 4.93l3.74-2.84z"
+                fill="#FBBC05"
+              />
+              <path
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.64 1 3.92 3.5 2.1 7.07l3.74 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                fill="#EA4335"
+              />
+            </svg>
+            Continue with Google
+          </Button>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             {mode === "login" ? "Don't have an account? " : "Already have an account? "}
