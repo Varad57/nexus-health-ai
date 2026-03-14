@@ -24,7 +24,7 @@ const mainNav = [
 ];
 
 const toolsNav = [
-  { title: "Voice Analyzer", url: "/voice", icon: Mic },
+  { title: "Voice Prescribe", url: "/voice", icon: Mic },
   { title: "Gesture Control", url: "/gesture", icon: Hand },
 ];
 
