@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Activity, LayoutDashboard, Users, FileText, Upload, Bell, BarChart3, Settings, LogOut, Shield, Mic, Hand } from "lucide-react";
+import { Activity, LayoutDashboard, Users, FileText, Upload, Bell, BarChart3, Settings, LogOut, Shield, Mic, Hand, ScanFace } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -26,6 +26,7 @@ const mainNav = [
 const toolsNav = [
   { title: "Voice Prescribe", url: "/voice", icon: Mic },
   { title: "Gesture Control", url: "/gesture", icon: Hand },
+  { title: "Face Recognition", url: "/face-recognition", icon: ScanFace },
 ];
 
 const bottomNav = [
